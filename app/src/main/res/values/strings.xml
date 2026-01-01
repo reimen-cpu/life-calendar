@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Life Calendar</string>
+    <string name="subtitle">Visualize your life as weeks</string>
+    
+    <string name="birthdate">Your Birthdate</string>
+    <string name="select_date_hint">Tap to select</string>
+    <string name="select_birthdate">Select Birthdate</string>
+    
+    <string name="life_expectancy">Life Expectancy</string>
+    
+    <string name="weeks_lived">WEEKS LIVED</string>
+    <string name="weeks_remaining">WEEKS LEFT</string>
+    <string name="progress">PROGRESS</string>
+    
+    <string name="auto_update">Weekly Auto-Update</string>
+    <string name="auto_update_desc">Update wallpaper every Sunday</string>
+    
+    <string name="set_wallpaper">Set Wallpaper Now</string>
+</resources>
