@@ -2,21 +2,23 @@ package com.lifecalendar
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.work.*
 import com.lifecalendar.databinding.ActivityMainBinding
 import java.time.LocalDate
+import java.time.Year
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var prefsManager: PreferencesManager
     private lateinit var wallpaperGenerator: WallpaperGenerator
+    private lateinit var yearTrackerGenerator: YearTrackerGenerator
     
     private var selectedDate: LocalDate? = null
+    private var isYearTrackerMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,12 +27,37 @@ class MainActivity : AppCompatActivity() {
 
         prefsManager = PreferencesManager(this)
         wallpaperGenerator = WallpaperGenerator(this)
+        yearTrackerGenerator = YearTrackerGenerator(this)
 
         setupUI()
         loadSavedData()
+        updateYearStats()
     }
 
     private fun setupUI() {
+        // Wallpaper type toggle
+        binding.toggleWallpaperType.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                isYearTrackerMode = (checkedId == R.id.btnYearTracker)
+                updateUIForMode()
+                
+                // Save preference immediately when toggling
+                prefsManager.saveWallpaperType(
+                    if (isYearTrackerMode) PreferencesManager.TYPE_YEAR_TRACKER 
+                    else PreferencesManager.TYPE_LIFE_CALENDAR
+                )
+            }
+        }
+        
+        // Days position switch
+        binding.switchDaysPosition.setOnCheckedChangeListener { _, isChecked ->
+            binding.tvPositionHint.text = if (isChecked) "Currently at top" else "Currently at bottom"
+            prefsManager.saveDaysPositionTop(isChecked)
+        }
+        
+        // Default to Life Calendar mode
+        binding.btnLifeCalendar.isChecked = true
+
         // Date picker button
         binding.btnSelectDate.setOnClickListener {
             showDatePicker()
@@ -45,18 +72,42 @@ class MainActivity : AppCompatActivity() {
 
         // Set wallpaper now button
         binding.btnSetWallpaper.setOnClickListener {
-            setWallpaperNow()
+            if (isYearTrackerMode) {
+                setYearTrackerWallpaper()
+            } else {
+                setLifeCalendarWallpaper()
+            }
         }
 
         // Enable/disable auto-update switch
         binding.switchAutoUpdate.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                scheduleWeeklyUpdate()
-                Toast.makeText(this, "Weekly updates enabled", Toast.LENGTH_SHORT).show()
+                scheduleMidnightUpdate()
+                Toast.makeText(this, "Midnight auto-updates enabled", Toast.LENGTH_SHORT).show()
             } else {
-                cancelWeeklyUpdate()
-                Toast.makeText(this, "Weekly updates disabled", Toast.LENGTH_SHORT).show()
+                cancelMidnightUpdate()
+                Toast.makeText(this, "Midnight updates disabled", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+    
+    private fun updateUIForMode() {
+        if (isYearTrackerMode) {
+            // Show Year Tracker UI, hide Life Calendar specific UI
+            binding.cardBirthdate.visibility = View.GONE
+            binding.cardLifeExpectancy.visibility = View.GONE
+            binding.cardLifeStats.visibility = View.GONE
+            binding.cardYearStats.visibility = View.VISIBLE
+            binding.cardDaysPosition.visibility = View.VISIBLE
+            updateYearStats()
+        } else {
+            // Show Life Calendar UI
+            binding.cardBirthdate.visibility = View.VISIBLE
+            binding.cardLifeExpectancy.visibility = View.VISIBLE
+            binding.cardLifeStats.visibility = View.VISIBLE
+            binding.cardYearStats.visibility = View.GONE
+            binding.cardDaysPosition.visibility = View.GONE
+            updateStats()
         }
     }
 
@@ -72,6 +123,11 @@ class MainActivity : AppCompatActivity() {
         val lifeExpectancy = prefsManager.getLifeExpectancy()
         binding.sliderLifeExpectancy.value = lifeExpectancy.toFloat()
         binding.tvLifeExpectancy.text = "$lifeExpectancy years"
+        
+        // Load days position preference
+        val isDaysTop = prefsManager.isDaysPositionTop()
+        binding.switchDaysPosition.isChecked = isDaysTop
+        binding.tvPositionHint.text = if (isDaysTop) "Currently at top" else "Currently at bottom"
     }
 
     private fun showDatePicker() {
@@ -125,8 +181,22 @@ class MainActivity : AppCompatActivity() {
         binding.tvPercentLived.text = "%.1f%%".format(percentLived)
         binding.progressLife.progress = percentLived.toInt()
     }
+    
+    private fun updateYearStats() {
+        val today = LocalDate.now()
+        val dayOfYear = today.dayOfYear
+        val year = today.year
+        val totalDays = if (Year.of(year).isLeap) 366 else 365
+        val daysRemaining = (totalDays - dayOfYear).coerceAtLeast(0)
+        val percentProgress = ((dayOfYear.toFloat() / totalDays) * 100).coerceIn(0f, 100f)
+        
+        binding.tvDaysPassed.text = "%,d".format(dayOfYear)
+        binding.tvDaysRemaining.text = "%,d".format(daysRemaining)
+        binding.tvYearProgress.text = "%.1f%%".format(percentProgress)
+        binding.progressYear.progress = percentProgress.toInt()
+    }
 
-    private fun setWallpaperNow() {
+    private fun setLifeCalendarWallpaper() {
         if (selectedDate == null) {
             Toast.makeText(this, "Please select your birthdate first", Toast.LENGTH_SHORT).show()
             return
@@ -142,41 +212,40 @@ class MainActivity : AppCompatActivity() {
         try {
             val bitmap = wallpaperGenerator.generateWallpaper(weeksLived, lifeExpectancy)
             wallpaperGenerator.setWallpaper(bitmap)
-            Toast.makeText(this, "Wallpaper set successfully! 🎉", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Life Calendar wallpaper set! 🎉", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Toast.makeText(this, "Failed to set wallpaper: ${e.message}", Toast.LENGTH_LONG).show()
         }
-    }
-
-    private fun scheduleWeeklyUpdate() {
-        val constraints = Constraints.Builder()
-            .setRequiresBatteryNotLow(true)
-            .build()
-
-        // Run every 7 days
-        val workRequest = PeriodicWorkRequestBuilder<WallpaperWorker>(7, TimeUnit.DAYS)
-            .setConstraints(constraints)
-            .setInitialDelay(calculateDelayToNextSunday(), TimeUnit.MILLISECONDS)
-            .build()
-
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            WallpaperWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.UPDATE,
-            workRequest
-        )
-    }
-
-    private fun cancelWeeklyUpdate() {
-        WorkManager.getInstance(this).cancelUniqueWork(WallpaperWorker.WORK_NAME)
-    }
-
-    private fun calculateDelayToNextSunday(): Long {
-        val now = Calendar.getInstance()
-        val daysUntilSunday = (Calendar.SUNDAY - now.get(Calendar.DAY_OF_WEEK) + 7) % 7
         
-        // If today is Sunday, schedule for next Sunday
-        val actualDays = if (daysUntilSunday == 0) 7 else daysUntilSunday
+        // Save wallpaper type for auto-updates
+        prefsManager.saveWallpaperType(PreferencesManager.TYPE_LIFE_CALENDAR)
+    }
+    
+    private fun setYearTrackerWallpaper() {
+        val today = LocalDate.now()
+        val dayOfYear = today.dayOfYear
+        val year = today.year
         
-        return TimeUnit.DAYS.toMillis(actualDays.toLong())
+        // Get position preference
+        val isDaysTop = prefsManager.isDaysPositionTop()
+        
+        try {
+            val bitmap = yearTrackerGenerator.generateWallpaper(dayOfYear, year, isDaysTop)
+            yearTrackerGenerator.setWallpaper(bitmap)
+            Toast.makeText(this, "Year Tracker wallpaper set! 🎉", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Failed to set wallpaper: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+        
+        // Save wallpaper type for auto-updates
+        prefsManager.saveWallpaperType(PreferencesManager.TYPE_YEAR_TRACKER)
+    }
+
+    private fun scheduleMidnightUpdate() {
+        MidnightWallpaperReceiver.scheduleMidnightAlarm(this)
+    }
+
+    private fun cancelMidnightUpdate() {
+        MidnightWallpaperReceiver.cancelMidnightAlarm(this)
     }
 }

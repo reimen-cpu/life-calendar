@@ -2,32 +2,38 @@
 
 > **Visualize your entire life as weeks on your phone wallpaper**
 
-Life Calendar is a minimalist Android wallpaper app that transforms your life into a beautiful grid of dots. Each dot represents one week of your life—filled dots show weeks you've lived, hollow dots show weeks remaining based on your life expectancy.
+Life Calendar is a minimalist Android wallpaper app with two powerful visualization modes:
 
-![Android](https://img.shields.io/badge/Android-26%2B-green?logo=android)
-![Kotlin](https://img.shields.io/badge/Kotlin-2.0-purple?logo=kotlin)
-![License](https://img.shields.io/badge/License-MIT-blue)
+1.  **Life Calendar:** Transforms your life into a grid of dots, where each dot represents one week.
+2.  **Year Tracker:** Visualizes the current year as a grid of days, with passed days turning black.
+
+## ✨ Features
+
+-  **Two Modes:**
+    -  **Life Calendar:** Weeks lived (filled) vs. weeks remaining (hollow).
+    -  **Year Tracker:** Mint green dots for remaining days, black dots for days passed.
+-  **Daily Auto-Update:** Wallpaper updates automatically at midnight to keep your tracker accurate.
+-  **Customizable:**
+    -  **Life Expectancy:** Adjust from 50 to 120 years.
+    -  **Days Position:** Toggle days counter between top and bottom (Year Tracker).
+-  **Minimalist Design:** Pure black background optimized for AMOLED screens.
+-  **Battery Friendly:** Updates only once per day using efficient scheduling.
 
 ---
 
-##  Features
+## 📱 Modes
 
--  **Beautiful Minimalist Design** — Pure black wallpaper with elegant white dots
--  **Life Statistics** — See weeks lived, weeks remaining, and life progress percentage
--  **Weekly Auto-Update** — Automatically updates your wallpaper every Sunday
--  **Customizable** — Adjust life expectancy from 50 to 120 years
--  **Battery Friendly** — Uses WorkManager for efficient background updates
--  **AMOLED Optimized** — Perfect for OLED/AMOLED displays
-
----
-
-## 📱 Screenshots
-
-The wallpaper displays:
-- A grid where **each row = 1 year** (52 weeks)
+### 1. Life Calendar
+- Grid where **each row = 1 year** (52 weeks)
 - **Filled dots** = weeks you've already lived
-- **Hollow dots** = weeks remaining in your life
-- Year markers every 10 years for reference
+- **Hollow dots** = weeks remaining
+- Year markers every 10 years
+
+### 2. Year Tracker
+- Grid where **each dot = 1 day** of the current year
+- **Mint Green dots** = days remaining
+- **Black dots** = days passed ("lost forever")
+- Days remaining counter (toggleable top/bottom position)
 
 ---
 

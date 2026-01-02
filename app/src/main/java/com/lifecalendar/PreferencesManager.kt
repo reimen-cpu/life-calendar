@@ -17,7 +17,12 @@ class PreferencesManager(context: Context) {
         private const val PREFS_NAME = "life_calendar_prefs"
         private const val KEY_BIRTHDATE = "birthdate"
         private const val KEY_LIFE_EXPECTANCY = "life_expectancy"
+        private const val KEY_WALLPAPER_TYPE = "wallpaper_type"
+        private const val KEY_DAYS_POSITION_TOP = "days_position_top"
         private const val DEFAULT_LIFE_EXPECTANCY = 80
+        
+        const val TYPE_LIFE_CALENDAR = 0
+        const val TYPE_YEAR_TRACKER = 1
     }
 
     /**
@@ -69,4 +74,34 @@ class PreferencesManager(context: Context) {
     fun isBirthdateSet(): Boolean {
         return getBirthdate() != null
     }
+    
+    /**
+     * Save wallpaper type (Life Calendar or Year Tracker)
+     */
+    fun saveWallpaperType(type: Int) {
+        prefs.edit().putInt(KEY_WALLPAPER_TYPE, type).apply()
+    }
+    
+    /**
+     * Get wallpaper type (default: Life Calendar)
+     */
+    fun getWallpaperType(): Int {
+        return prefs.getInt(KEY_WALLPAPER_TYPE, TYPE_LIFE_CALENDAR)
+    }
+    
+    /**
+     * Save days counter position preference for Year Tracker
+     * true = top, false = bottom
+     */
+    fun saveDaysPositionTop(isTop: Boolean) {
+        prefs.edit().putBoolean(KEY_DAYS_POSITION_TOP, isTop).apply()
+    }
+    
+    /**
+     * Get days counter position (default: false/bottom)
+     */
+    fun isDaysPositionTop(): Boolean {
+        return prefs.getBoolean(KEY_DAYS_POSITION_TOP, false)
+    }
 }
+

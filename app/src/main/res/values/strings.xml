@@ -13,8 +13,8 @@
     <string name="weeks_remaining">WEEKS LEFT</string>
     <string name="progress">PROGRESS</string>
     
-    <string name="auto_update">Weekly Auto-Update</string>
-    <string name="auto_update_desc">Update wallpaper every Sunday</string>
+    <string name="auto_update">Daily Auto-Update</string>
+    <string name="auto_update_desc">Update wallpaper at midnight</string>
     
     <string name="set_wallpaper">Set Wallpaper Now</string>
 </resources>

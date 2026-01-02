@@ -1,51 +1,51 @@
 package com.lifecalendar
 
 import android.content.Context
-import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import java.time.LocalDate
+import java.time.Year
 
 /**
- * WorkManager Worker that runs weekly to update the wallpaper
+ * Background worker to update wallpaper daily
+ * Updates both Life Calendar and Year Tracker based on saved preference
  */
 class WallpaperWorker(
     context: Context,
     workerParams: WorkerParameters
 ) : Worker(context, workerParams) {
 
-    companion object {
-        const val TAG = "WallpaperWorker"
-        const val WORK_NAME = "life_calendar_weekly_update"
-    }
-
     override fun doWork(): Result {
-        Log.d(TAG, "Starting weekly wallpaper update...")
-
         return try {
             val prefsManager = PreferencesManager(applicationContext)
+            val wallpaperType = prefsManager.getWallpaperType()
             
-            // Check if birthdate is set
-            if (!prefsManager.isBirthdateSet()) {
-                Log.w(TAG, "Birthdate not set, skipping wallpaper update")
-                return Result.success()
+            if (wallpaperType == PreferencesManager.TYPE_YEAR_TRACKER) {
+                // Update Year Tracker wallpaper
+                val yearTrackerGenerator = YearTrackerGenerator(applicationContext)
+                val today = LocalDate.now()
+                val isDaysTop = prefsManager.isDaysPositionTop()
+                val bitmap = yearTrackerGenerator.generateWallpaper(today.dayOfYear, today.year, isDaysTop)
+                yearTrackerGenerator.setWallpaper(bitmap)
+            } else {
+                // Update Life Calendar wallpaper
+                val wallpaperGenerator = WallpaperGenerator(applicationContext)
+                val weeksLived = prefsManager.calculateWeeksLived()
+                val lifeExpectancy = prefsManager.getLifeExpectancy()
+                
+                if (weeksLived >= 0) {
+                    val bitmap = wallpaperGenerator.generateWallpaper(weeksLived, lifeExpectancy)
+                    wallpaperGenerator.setWallpaper(bitmap)
+                }
             }
-
-            // Calculate weeks lived
-            val weeksLived = prefsManager.calculateWeeksLived()
-            val lifeExpectancy = prefsManager.getLifeExpectancy()
-
-            Log.d(TAG, "Generating wallpaper: $weeksLived weeks lived, $lifeExpectancy year expectancy")
-
-            // Generate and set wallpaper
-            val generator = WallpaperGenerator(applicationContext)
-            val bitmap = generator.generateWallpaper(weeksLived, lifeExpectancy)
-            generator.setWallpaper(bitmap)
-
-            Log.d(TAG, "Wallpaper updated successfully!")
+            
             Result.success()
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to update wallpaper", e)
             Result.retry()
         }
+    }
+
+    companion object {
+        const val WORK_NAME = "wallpaper_daily_update"
     }
 }
