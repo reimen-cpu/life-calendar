@@ -1,6 +1,9 @@
 package com.lifecalendar
 
 import android.app.DatePickerDialog
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -9,6 +12,7 @@ import com.lifecalendar.databinding.ActivityMainBinding
 import java.time.LocalDate
 import java.time.Year
 import java.util.Calendar
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,13 +23,37 @@ class MainActivity : AppCompatActivity() {
     
     private var selectedDate: LocalDate? = null
     private var isYearTrackerMode = false
+    
+    // Flag to prevent listener from firing during programmatic switch changes
+    private var isRestoringState = false
+
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = newBase.getSharedPreferences("life_calendar_prefs", Context.MODE_PRIVATE)
+        val language = prefs.getString("language", "en") ?: "en"
+        val locale = Locale(language)
+        Locale.setDefault(locale)
+        val config = Configuration(newBase.resources.configuration)
+        config.setLocale(locale)
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        prefsManager = PreferencesManager(this)
+        
+        // Check first launch — redirect to language selection
+        if (prefsManager.isFirstLaunch()) {
+            val intent = Intent(this, LanguageSelectionActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
+        
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        prefsManager = PreferencesManager(this)
         wallpaperGenerator = WallpaperGenerator(this)
         yearTrackerGenerator = YearTrackerGenerator(this)
 
@@ -51,7 +79,7 @@ class MainActivity : AppCompatActivity() {
         
         // Days position switch
         binding.switchDaysPosition.setOnCheckedChangeListener { _, isChecked ->
-            binding.tvPositionHint.text = if (isChecked) "Currently at top" else "Currently at bottom"
+            binding.tvPositionHint.text = if (isChecked) getString(R.string.position_top) else getString(R.string.position_bottom)
             prefsManager.saveDaysPositionTop(isChecked)
         }
         
@@ -66,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         // Life expectancy slider
         binding.sliderLifeExpectancy.addOnChangeListener { _, value, _ ->
             val years = value.toInt()
-            binding.tvLifeExpectancy.text = "$years years"
+            binding.tvLifeExpectancy.text = getString(R.string.years_format, years)
             updateStats()
         }
 
@@ -81,12 +109,16 @@ class MainActivity : AppCompatActivity() {
 
         // Enable/disable auto-update switch
         binding.switchAutoUpdate.setOnCheckedChangeListener { _, isChecked ->
+            if (isRestoringState) return@setOnCheckedChangeListener
+            
+            prefsManager.saveAutoUpdateEnabled(isChecked)
+            
             if (isChecked) {
                 scheduleMidnightUpdate()
-                Toast.makeText(this, "Midnight auto-updates enabled", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.auto_update_enabled), Toast.LENGTH_SHORT).show()
             } else {
                 cancelMidnightUpdate()
-                Toast.makeText(this, "Midnight updates disabled", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.auto_update_disabled), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -112,6 +144,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadSavedData() {
+        isRestoringState = true
+        
         // Load birthdate
         prefsManager.getBirthdate()?.let { date ->
             selectedDate = date
@@ -122,12 +156,31 @@ class MainActivity : AppCompatActivity() {
         // Load life expectancy
         val lifeExpectancy = prefsManager.getLifeExpectancy()
         binding.sliderLifeExpectancy.value = lifeExpectancy.toFloat()
-        binding.tvLifeExpectancy.text = "$lifeExpectancy years"
+        binding.tvLifeExpectancy.text = getString(R.string.years_format, lifeExpectancy)
         
         // Load days position preference
         val isDaysTop = prefsManager.isDaysPositionTop()
         binding.switchDaysPosition.isChecked = isDaysTop
-        binding.tvPositionHint.text = if (isDaysTop) "Currently at top" else "Currently at bottom"
+        binding.tvPositionHint.text = if (isDaysTop) getString(R.string.position_top) else getString(R.string.position_bottom)
+        
+        // Load wallpaper type
+        val wallpaperType = prefsManager.getWallpaperType()
+        if (wallpaperType == PreferencesManager.TYPE_YEAR_TRACKER) {
+            binding.btnYearTracker.isChecked = true
+        } else {
+            binding.btnLifeCalendar.isChecked = true
+        }
+        
+        // Load auto-update state
+        val autoUpdateEnabled = prefsManager.isAutoUpdateEnabled()
+        binding.switchAutoUpdate.isChecked = autoUpdateEnabled
+        
+        // Re-schedule alarm if it was previously enabled
+        if (autoUpdateEnabled) {
+            scheduleMidnightUpdate()
+        }
+        
+        isRestoringState = false
     }
 
     private fun showDatePicker() {
@@ -161,10 +214,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun formatDate(date: LocalDate): String {
         val months = arrayOf(
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
+            getString(R.string.month_january), getString(R.string.month_february),
+            getString(R.string.month_march), getString(R.string.month_april),
+            getString(R.string.month_may), getString(R.string.month_june),
+            getString(R.string.month_july), getString(R.string.month_august),
+            getString(R.string.month_september), getString(R.string.month_october),
+            getString(R.string.month_november), getString(R.string.month_december)
         )
-        return "${months[date.monthValue - 1]} ${date.dayOfMonth}, ${date.year}"
+        return getString(R.string.date_format, months[date.monthValue - 1], date.dayOfMonth, date.year)
     }
 
     private fun updateStats() {
@@ -198,7 +255,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setLifeCalendarWallpaper() {
         if (selectedDate == null) {
-            Toast.makeText(this, "Please select your birthdate first", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.select_birthdate_first), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -212,9 +269,9 @@ class MainActivity : AppCompatActivity() {
         try {
             val bitmap = wallpaperGenerator.generateWallpaper(weeksLived, lifeExpectancy)
             wallpaperGenerator.setWallpaper(bitmap)
-            Toast.makeText(this, "Life Calendar wallpaper set! 🎉", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.wallpaper_set_life), Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Toast.makeText(this, "Failed to set wallpaper: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.wallpaper_failed, e.message), Toast.LENGTH_LONG).show()
         }
         
         // Save wallpaper type for auto-updates
@@ -232,9 +289,9 @@ class MainActivity : AppCompatActivity() {
         try {
             val bitmap = yearTrackerGenerator.generateWallpaper(dayOfYear, year, isDaysTop)
             yearTrackerGenerator.setWallpaper(bitmap)
-            Toast.makeText(this, "Year Tracker wallpaper set! 🎉", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.wallpaper_set_year), Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Toast.makeText(this, "Failed to set wallpaper: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.wallpaper_failed, e.message), Toast.LENGTH_LONG).show()
         }
         
         // Save wallpaper type for auto-updates

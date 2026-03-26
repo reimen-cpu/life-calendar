@@ -75,20 +75,20 @@ class WallpaperGenerator(private val context: Context) {
         textPaint.textSize = width * 0.028f
         textPaint.alpha = 230
         textPaint.textAlign = Paint.Align.RIGHT
-        canvas.drawText("LIFE CALENDAR", width - paddingRight, paddingTop * 0.45f, textPaint)
+        canvas.drawText(context.getString(R.string.wp_life_calendar), width - paddingRight, paddingTop * 0.45f, textPaint)
 
         // Draw "WEEK OF THE YEAR" label
         textPaint.textSize = width * 0.018f
         textPaint.alpha = 128
         textPaint.textAlign = Paint.Align.LEFT
-        canvas.drawText("WEEK OF THE YEAR", paddingLeft, paddingTop * 0.45f, textPaint)
+        canvas.drawText(context.getString(R.string.wp_week_of_year), paddingLeft, paddingTop * 0.45f, textPaint)
 
         // Draw "YEAR OF YOUR LIFE" label (rotated)
         canvas.save()
         canvas.translate(paddingLeft * 0.35f, paddingTop + gridHeight / 2)
         canvas.rotate(-90f)
         textPaint.textAlign = Paint.Align.CENTER
-        canvas.drawText("YEAR OF YOUR LIFE", 0f, 0f, textPaint)
+        canvas.drawText(context.getString(R.string.wp_year_of_life), 0f, 0f, textPaint)
         canvas.restore()
 
         // Paint for filled dots (lived weeks)

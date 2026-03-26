@@ -28,6 +28,12 @@
             </intent-filter>
         </activity>
         
+        
+        <activity
+            android:name=".LanguageSelectionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.LifeCalendar" />
+        
         <!-- Midnight wallpaper update receiver -->
         <receiver
             android:name=".MidnightWallpaperReceiver"

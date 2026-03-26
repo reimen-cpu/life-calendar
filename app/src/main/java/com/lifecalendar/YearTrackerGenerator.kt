@@ -164,7 +164,7 @@ class YearTrackerGenerator(private val context: Context) {
         textPaint.color = whiteColor
         textPaint.textSize = width * 0.055f
         textPaint.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-        canvas.drawText("${daysRemaining}d left", width / 2f, progressY - 60f, textPaint)
+        canvas.drawText(context.getString(R.string.wp_days_left_format, daysRemaining), width / 2f, progressY - 60f, textPaint)
 
 
         return bitmap

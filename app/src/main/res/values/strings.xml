@@ -2,19 +2,73 @@
 <resources>
     <string name="app_name">Life Calendar</string>
     <string name="subtitle">Visualize your life as weeks</string>
-    
+
+    <!-- Wallpaper type -->
+    <string name="wallpaper_type">Wallpaper Type</string>
+    <string name="life_calendar">Life Calendar</string>
+    <string name="year_tracker">Year Tracker</string>
+
+    <!-- Birthdate -->
     <string name="birthdate">Your Birthdate</string>
     <string name="select_date_hint">Tap to select</string>
     <string name="select_birthdate">Select Birthdate</string>
-    
+
+    <!-- Life expectancy -->
     <string name="life_expectancy">Life Expectancy</string>
-    
+    <string name="years_format">%d years</string>
+
+    <!-- Life stats -->
     <string name="weeks_lived">WEEKS LIVED</string>
     <string name="weeks_remaining">WEEKS LEFT</string>
     <string name="progress">PROGRESS</string>
-    
+
+    <!-- Year tracker stats -->
+    <string name="days_passed">days passed</string>
+    <string name="days_left">days left</string>
+    <string name="year_progress">year progress</string>
+
+    <!-- Days position -->
+    <string name="days_counter_position">Days Counter Position</string>
+    <string name="position_top">Currently at top</string>
+    <string name="position_bottom">Currently at bottom</string>
+
+    <!-- Auto update -->
     <string name="auto_update">Daily Auto-Update</string>
     <string name="auto_update_desc">Update wallpaper at midnight</string>
-    
+    <string name="auto_update_enabled">Midnight auto-updates enabled</string>
+    <string name="auto_update_disabled">Midnight updates disabled</string>
+
+    <!-- Set wallpaper -->
     <string name="set_wallpaper">Set Wallpaper Now</string>
+    <string name="wallpaper_set_life">Life Calendar wallpaper set! 🎉</string>
+    <string name="wallpaper_set_year">Year Tracker wallpaper set! 🎉</string>
+    <string name="wallpaper_failed">Failed to set wallpaper: %s</string>
+    <string name="select_birthdate_first">Please select your birthdate first</string>
+
+    <!-- Wallpaper labels -->
+    <string name="wp_life_calendar">LIFE CALENDAR</string>
+    <string name="wp_week_of_year">WEEK OF THE YEAR</string>
+    <string name="wp_year_of_life">YEAR OF YOUR LIFE</string>
+    <string name="wp_days_left_format">%dd left</string>
+
+    <!-- Month names -->
+    <string name="month_january">January</string>
+    <string name="month_february">February</string>
+    <string name="month_march">March</string>
+    <string name="month_april">April</string>
+    <string name="month_may">May</string>
+    <string name="month_june">June</string>
+    <string name="month_july">July</string>
+    <string name="month_august">August</string>
+    <string name="month_september">September</string>
+    <string name="month_october">October</string>
+    <string name="month_november">November</string>
+    <string name="month_december">December</string>
+    <string name="date_format">%1$s %2$d, %3$d</string>
+
+    <!-- Language selection -->
+    <string name="choose_language">Choose your language</string>
+    <string name="lang_english">English</string>
+    <string name="lang_spanish">Español</string>
+    <string name="continue_btn">Continue</string>
 </resources>

@@ -19,6 +19,9 @@ class PreferencesManager(context: Context) {
         private const val KEY_LIFE_EXPECTANCY = "life_expectancy"
         private const val KEY_WALLPAPER_TYPE = "wallpaper_type"
         private const val KEY_DAYS_POSITION_TOP = "days_position_top"
+        private const val KEY_AUTO_UPDATE_ENABLED = "auto_update_enabled"
+        private const val KEY_LANGUAGE = "language"
+        private const val KEY_FIRST_LAUNCH = "first_launch"
         private const val DEFAULT_LIFE_EXPECTANCY = 80
         
         const val TYPE_LIFE_CALENDAR = 0
@@ -102,6 +105,48 @@ class PreferencesManager(context: Context) {
      */
     fun isDaysPositionTop(): Boolean {
         return prefs.getBoolean(KEY_DAYS_POSITION_TOP, false)
+    }
+    
+    /**
+     * Save auto-update enabled state
+     */
+    fun saveAutoUpdateEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_AUTO_UPDATE_ENABLED, enabled).apply()
+    }
+    
+    /**
+     * Get auto-update enabled state (default: false)
+     */
+    fun isAutoUpdateEnabled(): Boolean {
+        return prefs.getBoolean(KEY_AUTO_UPDATE_ENABLED, false)
+    }
+    
+    /**
+     * Save selected language ("en" or "es")
+     */
+    fun saveLanguage(language: String) {
+        prefs.edit().putString(KEY_LANGUAGE, language).apply()
+    }
+    
+    /**
+     * Get saved language (default: "en")
+     */
+    fun getLanguage(): String {
+        return prefs.getString(KEY_LANGUAGE, "en") ?: "en"
+    }
+    
+    /**
+     * Check if this is the first launch
+     */
+    fun isFirstLaunch(): Boolean {
+        return prefs.getBoolean(KEY_FIRST_LAUNCH, true)
+    }
+    
+    /**
+     * Mark first launch as complete
+     */
+    fun setFirstLaunchComplete() {
+        prefs.edit().putBoolean(KEY_FIRST_LAUNCH, false).apply()
     }
 }
 

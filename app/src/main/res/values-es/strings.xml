@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Life Calendar</string>
+    <string name="subtitle">Visualiza tu vida en semanas</string>
+
+    <!-- Wallpaper type -->
+    <string name="wallpaper_type">Tipo de Fondo</string>
+    <string name="life_calendar">Calendario Vital</string>
+    <string name="year_tracker">Rastreador Anual</string>
+
+    <!-- Birthdate -->
+    <string name="birthdate">Tu Fecha de Nacimiento</string>
+    <string name="select_date_hint">Toca para seleccionar</string>
+    <string name="select_birthdate">Seleccionar Fecha</string>
+
+    <!-- Life expectancy -->
+    <string name="life_expectancy">Esperanza de Vida</string>
+    <string name="years_format">%d años</string>
+
+    <!-- Life stats -->
+    <string name="weeks_lived">SEMANAS VIVIDAS</string>
+    <string name="weeks_remaining">SEMANAS RESTANTES</string>
+    <string name="progress">PROGRESO</string>
+
+    <!-- Year tracker stats -->
+    <string name="days_passed">días pasados</string>
+    <string name="days_left">días restantes</string>
+    <string name="year_progress">progreso anual</string>
+
+    <!-- Days position -->
+    <string name="days_counter_position">Posición del Contador</string>
+    <string name="position_top">Actualmente arriba</string>
+    <string name="position_bottom">Actualmente abajo</string>
+
+    <!-- Auto update -->
+    <string name="auto_update">Actualización Diaria</string>
+    <string name="auto_update_desc">Actualizar fondo a medianoche</string>
+    <string name="auto_update_enabled">Actualización automática activada</string>
+    <string name="auto_update_disabled">Actualización automática desactivada</string>
+
+    <!-- Set wallpaper -->
+    <string name="set_wallpaper">Establecer Fondo Ahora</string>
+    <string name="wallpaper_set_life">¡Fondo de Calendario Vital establecido! 🎉</string>
+    <string name="wallpaper_set_year">¡Fondo de Rastreador Anual establecido! 🎉</string>
+    <string name="wallpaper_failed">Error al establecer fondo: %s</string>
+    <string name="select_birthdate_first">Selecciona tu fecha de nacimiento primero</string>
+
+    <!-- Wallpaper labels -->
+    <string name="wp_life_calendar">CALENDARIO VITAL</string>
+    <string name="wp_week_of_year">SEMANA DEL AÑO</string>
+    <string name="wp_year_of_life">AÑO DE TU VIDA</string>
+    <string name="wp_days_left_format">%dd restantes</string>
+
+    <!-- Month names -->
+    <string name="month_january">Enero</string>
+    <string name="month_february">Febrero</string>
+    <string name="month_march">Marzo</string>
+    <string name="month_april">Abril</string>
+    <string name="month_may">Mayo</string>
+    <string name="month_june">Junio</string>
+    <string name="month_july">Julio</string>
+    <string name="month_august">Agosto</string>
+    <string name="month_september">Septiembre</string>
+    <string name="month_october">Octubre</string>
+    <string name="month_november">Noviembre</string>
+    <string name="month_december">Diciembre</string>
+    <string name="date_format">%2$d de %1$s de %3$d</string>
+
+    <!-- Language selection -->
+    <string name="choose_language">Elige tu idioma</string>
+    <string name="lang_english">English</string>
+    <string name="lang_spanish">Español</string>
+    <string name="continue_btn">Continuar</string>
+</resources>
