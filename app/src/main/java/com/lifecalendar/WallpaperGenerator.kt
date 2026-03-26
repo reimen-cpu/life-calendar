@@ -48,14 +48,15 @@ class WallpaperGenerator(private val context: Context) {
 
         val totalYears = lifeExpectancy
         
-        // Calculate padding
-        val paddingTop = height * 0.15f
-        val paddingBottom = height * 0.08f
-        val paddingLeft = width * 0.12f
-        val paddingRight = width * 0.08f
+        // Calculate padding - increased for clock visibility (38% top)
+        val paddingTop = height * 0.38f
+        val paddingBottom = height * 0.12f
+        val paddingLeft = width * 0.15f
+        val paddingRight = width * 0.1f
 
         val gridWidth = width - paddingLeft - paddingRight
         val gridHeight = height - paddingTop - paddingBottom
+
 
         // Calculate cell and dot sizes
         val cellWidth = gridWidth / weeksPerYear
@@ -94,17 +95,16 @@ class WallpaperGenerator(private val context: Context) {
         val filledPaint = Paint().apply {
             isAntiAlias = true
             color = Color.WHITE
-            alpha = 230
+            alpha = 255
             style = Paint.Style.FILL
         }
 
-        // Paint for hollow dots (remaining weeks)
-        val hollowPaint = Paint().apply {
+        // Paint for remaining weeks (gray dots)
+        val remainingPaint = Paint().apply {
             isAntiAlias = true
-            color = Color.WHITE
-            alpha = 64
-            style = Paint.Style.STROKE
-            strokeWidth = (dotRadius * 0.15f).coerceAtLeast(1f)
+            color = Color.GRAY
+            alpha = 255
+            style = Paint.Style.FILL
         }
 
         // Draw grid of dots
@@ -119,7 +119,7 @@ class WallpaperGenerator(private val context: Context) {
                 if (isLived) {
                     canvas.drawCircle(x, y, dotRadius - dotSpacing, filledPaint)
                 } else {
-                    canvas.drawCircle(x, y, dotRadius - dotSpacing, hollowPaint)
+                    canvas.drawCircle(x, y, dotRadius - dotSpacing, remainingPaint)
                 }
 
                 weekCounter++

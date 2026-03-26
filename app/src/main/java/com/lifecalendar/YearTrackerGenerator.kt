@@ -18,8 +18,12 @@ class YearTrackerGenerator(private val context: Context) {
 
     private val columns = 15  // Dots per row
     
-    // Mint green color matching the reference image
-    private val mintGreen = Color.parseColor("#7FFFD4")
+    // Grayscale colors
+    private val grayColor = Color.GRAY
+    private val whiteColor = Color.WHITE
+    private val redColor = Color.parseColor("#FF4444")
+
+
     
     /**
      * Generate wallpaper bitmap for the device screen
@@ -57,13 +61,10 @@ class YearTrackerGenerator(private val context: Context) {
         // Calculate rows needed
         val rows = (totalDays + columns - 1) / columns
         
-        // Calculate dynamic padding based on text position
-        val topSpace = if (isDaysTop) 0.25f else 0.15f
-        val bottomSpace = if (isDaysTop) 0.15f else 0.25f
-        
-        val paddingTop = height * topSpace
-        val paddingBottom = height * bottomSpace
-        val paddingHorizontal = width * 0.06f
+        // Increased space for lock screen clock (approx 38% of height)
+        val paddingTop = height * 0.38f
+        val paddingBottom = height * 0.22f
+        val paddingHorizontal = width * 0.08f
 
         val gridWidth = width - (2 * paddingHorizontal)
         val gridHeight = height - paddingTop - paddingBottom
@@ -74,18 +75,26 @@ class YearTrackerGenerator(private val context: Context) {
         val dotRadius = min(cellWidth, cellHeight) * 0.35f
         val dotSpacing = dotRadius * 0.15f
 
-        // Paint for remaining days (colored dots - mint green)
-        val coloredPaint = Paint().apply {
+        // Paint for remaining days (gray dots)
+        val remainingPaint = Paint().apply {
             isAntiAlias = true
-            color = mintGreen
+            color = grayColor
             alpha = 255
             style = Paint.Style.FILL
         }
 
-        // Paint for passed days (black/very dark dots - "lost forever")
+        // Paint for passed days (white dots)
         val passedPaint = Paint().apply {
             isAntiAlias = true
-            color = Color.parseColor("#1A1A1A")  // Very dark gray, almost black
+            color = whiteColor
+            alpha = 255
+            style = Paint.Style.FILL
+        }
+
+        // Paint for current day (red dot)
+        val todayPaint = Paint().apply {
+            isAntiAlias = true
+            color = redColor
             alpha = 255
             style = Paint.Style.FILL
         }
@@ -99,48 +108,64 @@ class YearTrackerGenerator(private val context: Context) {
                 val x = paddingHorizontal + (col * cellWidth) + (cellWidth / 2)
                 val y = paddingTop + (row * cellHeight) + (cellHeight / 2)
 
-                val isPassed = dayCounter < dayOfYear
+                val isToday = dayCounter == dayOfYear - 1
+                val isPassed = dayCounter < dayOfYear - 1
 
-                if (isPassed) {
-                    // Day has passed - show as dark/black (lost forever)
+                if (isToday) {
+                    // Today - show as red
+                    canvas.drawCircle(x, y, dotRadius - dotSpacing, todayPaint)
+                } else if (isPassed) {
+                    // Day has passed - show as white
                     canvas.drawCircle(x, y, dotRadius - dotSpacing, passedPaint)
                 } else {
-                    // Day remaining - show as colored (mint green)
-                    canvas.drawCircle(x, y, dotRadius - dotSpacing, coloredPaint)
+                    // Day remaining - show as gray
+                    canvas.drawCircle(x, y, dotRadius - dotSpacing, remainingPaint)
                 }
 
                 dayCounter++
             }
         }
 
-        // Draw days remaining text
+        // Progress line (red)
+        val barPaint = Paint().apply {
+            isAntiAlias = true
+            color = redColor
+            style = Paint.Style.FILL
+        }
+        
+        val barWidth = width * 0.25f
+        val barHeight = 4f
+        val progressPercent = ((dayOfYear.toFloat() / totalDays) * 100).coerceAtLeast(1f)
+        
+        // Progress text (percentage)
         val textPaint = Paint().apply {
             isAntiAlias = true
-            color = mintGreen
-            typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
+            color = redColor
+            textSize = width * 0.045f
+            typeface = Typeface.create("sans-serif-bold", Typeface.BOLD)
             textAlign = Paint.Align.CENTER
         }
         
-        // Days remaining number - bold and compact
-        textPaint.textSize = width * 0.08f
-        
-        val textY = if (isDaysTop) {
-            // Position at top
-            height * 0.12f
-        } else {
-            // Position at bottom
-            height - height * 0.10f
-        }
-        
-        canvas.drawText(daysRemaining.toString(), width / 2f, textY, textPaint)
+        val progressY = height - height * 0.08f
+        canvas.drawText("${progressPercent.toInt()}%", width / 2f, progressY, textPaint)
 
-        // "days left in YEAR" label - smaller
-        textPaint.textSize = width * 0.032f
-        textPaint.alpha = 200
-        textPaint.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
         
-        val labelY = textY + width * 0.045f
-        canvas.drawText("days left in $year", width / 2f, labelY, textPaint)
+        // Horizontal bar below percentage
+        val barY = progressY + 15f
+        canvas.drawRect(
+            width / 2f - barWidth / 2f,
+            barY,
+            width / 2f + barWidth / 2f,
+            barY + barHeight,
+            barPaint
+        )
+
+        // Days left text (above percentage)
+        textPaint.color = whiteColor
+        textPaint.textSize = width * 0.055f
+        textPaint.typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        canvas.drawText("${daysRemaining}d left", width / 2f, progressY - 60f, textPaint)
+
 
         return bitmap
     }

@@ -3,6 +3,11 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+import java.util.Properties
+import java.io.FileInputStream
+import java.io.File
+
+
 android {
     namespace = "com.lifecalendar"
     compileSdk = 35
@@ -22,8 +27,40 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            
+            // Apply signing config if properties are provided
+            if (project.hasProperty("keystoreProperties")) {
+                val propsPath = project.property("keystoreProperties") as String
+                val propsFile = file(propsPath)
+                if (propsFile.exists()) {
+                    val props = Properties()
+                    propsFile.inputStream().use { props.load(it) }
+                    
+                    val signingConfig = signingConfigs.create("release") {
+                        val storeFilePath = props.getProperty("storeFile")
+                        val potentialJks = File(propsFile.parentFile, storeFilePath)
+                        val appJks = File(File(propsFile.parentFile, "app"), storeFilePath)
+                        
+                        storeFile = when {
+                            File(storeFilePath).isAbsolute -> File(storeFilePath)
+                            potentialJks.exists() -> potentialJks
+                            appJks.exists() -> appJks
+                            else -> potentialJks // Fallback to current behavior
+                        }
+                        
+                        storePassword = props.getProperty("storePassword")
+                        keyAlias = props.getProperty("keyAlias")
+                        keyPassword = props.getProperty("keyPassword")
+                    }
+
+                    this.signingConfig = signingConfig
+                }
+            }
+
+
         }
     }
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
